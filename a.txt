@@ -1,0 +1,130 @@
+Goal: Create a simple chat app where multiple people can chat with each other on a chat 
+screen.
+
+Use Reactjs, NodeJs and ExpressJs. For WebSockets, you can use Socket.io or ws library or 
+anything else works as well
+
+Features:
+
+1. Create UI with React that allows user to click a 'Start chatting' button, get a chat 
+screen, and be able to input text and 'send' it.
+
+2. That text should be visible on the chat screen and for other users connected to the
+ same chat room. Multiple chat rooms is not required, use only a single chat room.
+
+3. Multiple users should be able to join this chat room and start chatting (through 
+different browser tabs - socket.io or ws will help with this) and their text should 
+appear on the chat
+
+screen.
+
+4. There is no need to use a database. The job of the server, which is running over 
+Node.js and Express.js, is to handle real-time communication using WebSockets, and 
+handle connecting users to the same chat room and sending messages to each other.
+
+Copilot
+Certainly! Let’s create a simple chat app using React, Node.js, and WebSockets. We’ll 
+use Socket.io for real-time communication. Here are the steps to achieve this:
+
+Setting Up the Project:
+Create a new directory for your project.
+Initialize a new Node.js project using npm init.
+Install the necessary dependencies:
+npm install express socket.io
+
+Server Setup (Node.js and Express):
+Create a file named server.js.
+Set up an Express server and integrate Socket.io:
+JavaScript
+
+// server.js
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+
+// Handle WebSocket connections
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+
+  // Listen for chat messages
+  socket.on('chatMessage', (message) => {
+    // Broadcast the message to all connected clients
+    io.emit('chatMessage', message);
+  });
+
+  // Handle disconnection
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(Server running on port ${PORT});
+});
+AI-generated code. Review and use carefully. More info on FAQ.
+Client Setup (React):
+Create a new React app:
+npx create-react-app chat-app
+cd chat-app
+
+Replace the contents of src/App.js with the following:
+JavaScript
+
+// src/App.js
+import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
+
+const socket = io.connect('http://localhost:4000'); // Replace with your server URL
+
+function App() {
+  const [messages, setMessages] = useState([]);
+  const [inputText, setInputText] = useState('');
+
+  useEffect(() => {
+    // Listen for incoming chat messages
+    socket.on('chatMessage', (message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+  }, []);
+
+  const handleSendMessage = () => {
+    if (inputText.trim()) {
+      socket.emit('chatMessage', inputText);
+      setInputText('');
+    }
+  };
+
+  return (
+    <div className="App">
+      <h1>Chat App</h1>
+      <div className="chat-box">
+        {messages.map((msg, index) => (
+          <div key={index}>{msg}</div>
+        ))}
+      </div>
+      <input
+        type="text"
+        value={inputText}
+        onChange={(e) => setInputText(e.target.value)}
+      />
+      <button onClick={handleSendMessage}>Send</button>
+    </div>
+  );
+}
+
+export default App;
+AI-generated code. Review and use carefully. More info on FAQ.
+Run the App:
+Start your server by running node server.js.
+Start your React app by running npm start.
+Testing:
+Open multiple browser tabs and navigate to http://localhost:3000.
+Type messages in one tab, and they should appear in real-time in all other tabs.
+That’s it! You now have a basic chat app where users can join a chat room and send
+ messages using WebSockets. Remember to handle styling, error handling, and other 
+ features as needed for a production-ready app. 🚀
